@@ -1,0 +1,5 @@
+;; -*- scheme -*-
+(compile -s -J reser-module.scm -o reser.so)
+(compile -s reser.import.scm)
+
+(install-extension 'reser '("reser.so" "reser.import.so"))
