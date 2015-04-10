@@ -50,3 +50,16 @@
 (define (reser-start handler)
   (vhost-map `((".*" . ,(lambda (c) (reser-handler handler)))))
   (start-server))
+
+
+;; ==================== routes ====================
+
+(define-syntax match-route
+  (syntax-rules ()
+    ((_ request specs ...)
+     (match (cons  (map-ref request 'method)
+                   ;; remove trailing slashes:
+                   ;;   curl localhost:8080  => '(/)
+                   ;;   curl localhost:8080/ => '(/ "")
+                   (remove (lambda (x) (equal? x "")) (uri-path (map-ref request 'uri))))
+       specs ...))))
