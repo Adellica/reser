@@ -46,5 +46,8 @@ behaviour and REST-APIs while it's running.
 
 # TODO
 
-- handle arbitrary return-values (give proper error-msg, or make things convenient)
 - depend on persistent-hash-map? can we just use alists instead?
+- make a json wrapper to show how easy life can be
+- support better logging
+- unwrap uri-path in request map? 
+- user-code must (use matchable) because of our syntax, I think. this is bad
