@@ -61,5 +61,5 @@
                    ;; remove trailing slashes:
                    ;;   curl localhost:8080  => '(/)
                    ;;   curl localhost:8080/ => '(/ "")
-                   (remove (lambda (x) (equal? x "")) (uri-path (map-ref request 'uri))))
+                   (cdr (remove (lambda (x) (equal? x "")) (uri-path (map-ref request 'uri)))))
        specs ...))))
