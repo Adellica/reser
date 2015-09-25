@@ -8,7 +8,7 @@
                    (('GET)
                     (response body: "usage: POST some data to /echo\n"))
                    (('POST "echo")
-                    (response body: (conc (map-ref r 'body) " right back atcha\n")))
+                    (response body: (conc (alist-ref 'body r) " right back atcha\n")))
                    (('GET path)
                     (response body: (conc "your toplevel path is " path "\n")))
                    ;; responses should be completely customizable. here's a 404:
