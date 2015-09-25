@@ -29,6 +29,7 @@
 
 ;; slurp entire request payload into string
 (define (request-string!)
+  ;; TODO: what to do is we have more than 16MB? we can't just ignore it all.
   (read-string (min (* 16 1024 1024) ;; <- max 16MB
                     (or (header-value 'content-length (request-headers (current-request))) 0))
                (request-port (current-request))))
