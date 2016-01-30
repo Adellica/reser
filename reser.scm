@@ -10,13 +10,17 @@
 
 ;; call handler with an exception handler, and log error to request
 ;; response instead of stderr.
-(define ((wrap-errors handler) r)
+(define ((wrap-errors handler . ports) r)
+  (define (error-string exn)
+    (conc (get-condition-property exn 'exn 'message) ": "
+          (get-condition-property exn 'exn 'arguments) "\n"
+          (with-output-to-string (lambda () (pp (condition->list exn))))))
   (handle-exceptions
    exn
-   (response body: (conc (get-condition-property exn 'exn 'message) ": "
-                         (get-condition-property exn 'exn 'arguments) "\n"
-                         (with-output-to-string (lambda () (pp (condition->list exn)))))
-             status: 'bad-request)
+   (begin
+     (for-each (lambda (port) (display (error-string exn) port)) ports)
+     (response body: (error-string exn)
+               status: 'bad-request))
    (handler r)))
 
 ;; append \n at end of server response. makes it terminal friendly
