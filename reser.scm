@@ -28,7 +28,7 @@
 ;; access domain-name string, use "*" to give everybody access
 ;; ((wrap-cors-headers "*" (lambda _ (response headers: (headers `((abd "klm")))))) '())
 ;; ((wrap-cors-headers "*" (lambda _ (response body: "hi"))) '())
-(define ((wrap-cors-headers access handler) r)
+(define ((wrap-cors-headers handler access) r)
   (let ((response (handler r)))
     (alist-update 'headers
                   (alist-update 'Access-Control-Allow-Origin

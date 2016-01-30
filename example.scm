@@ -9,10 +9,10 @@
                                (request-route r))))))
 
 (define app*
-  (->>  (lambda (r) (app r))
-        (wrap-trailing-newline)
-        (wrap-errors)
-        (wrap-cors-headers "*")))
+  (->  (lambda (r) (app r))
+       (wrap-trailing-newline)
+       (wrap-errors)
+       (wrap-cors-headers "*")))
 
 (define server-thread
   (thread-start!
