@@ -1,22 +1,22 @@
-(use reser matchable persistent-hash-map nrepl)
+(use reser clojurian-syntax matchable)
 
-(define app
-  (wrap-errors ;; this prints error messages in HTTP response
-   (wrap-log ;; this prints every incoming request to stderr I think
-    (lambda (r)
-      (match-route r
-                   (('GET)
-                    (response body: "usage: POST some data to /echo\n"))
-                   (('POST "echo")
-                    (response body: (conc (alist-ref 'body r) " right back atcha\n")))
-                   (('GET path)
-                    (response body: (conc "your toplevel path is " path "\n")))
-                   ;; responses should be completely customizable. here's a 404:
-                   (else (response body: "url not found!\n" status: 'not-found)))))))
+(define (app r)
+  (match-route
+   r
+   (('GET) (response body: "root"))
+   (('POST "echo") (response body: (alist-ref 'body r)))
+   (else (response body: (conc "no matching uri for "
+                               (request-route r))))))
 
-;; start HTTP server in our thread
-;; to change the port, do: (use spiffy) (server-port 8090)
-(define reser-thread (thread-start! (lambda () (reser-start (lambda (r) (app r))))))
+(define app*
+  (->>  (lambda (r) (app r))
+        (wrap-trailing-newline)
+        (wrap-errors)
+        (wrap-cors-headers "*")))
 
-;; you can redefine app from the outside like this:
-(nrepl 8081)
+(define server-thread
+  (thread-start!
+   (lambda () (reser-start (lambda (r) (app* r))))))
+
+(thread-join! server-thread)
+;; or try: (use nrepl) (nrepl 1234)

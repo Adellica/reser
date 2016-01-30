@@ -1,2 +1,3 @@
 ;; -*- scheme -*-
-((author . "Adellica"))
+((author . "Adellica")
+ (needs spiffy intarweb uri-common matchable))

@@ -1,31 +1,28 @@
-(use spiffy intarweb uri-common ports data-structures)
+(use srfi-1 spiffy intarweb uri-common ports data-structures)
 
 ;; construct a response object
 (define (response #!key body status code reason headers)
-  `((body    ,body)
-    (status  ,status)
-    (code    ,code)
-    (reason  ,reason)
-    (headers ,headers)))
+  `((body    . ,body)
+    (status  . ,status)
+    (code    . ,code)
+    (reason  . ,reason)
+    (headers . ,headers)))
 
 ;; call handler with an exception handler, and log error to request
 ;; response instead of stderr.
-(define (wrap-errors handler)
-  (lambda (r)
-    (handle-exceptions exn
-      (response body: (conc ((condition-property-accessor 'exn 'message) exn)
-                            ": " ((condition-property-accessor 'exn 'arguments) exn) "\n"
-                            (with-output-to-string (lambda () (pp (condition->list exn)))))
-                status: 'bad-request)
-      (handler r))))
-
-(define ((wrap-log handler) r)
-  (print "incoming " (uri->string (request-uri (current-request))))
-  (handler r))
+(define ((wrap-errors handler) r)
+  (handle-exceptions
+   exn
+   (response body: (conc (get-condition-property exn 'exn 'message) ": "
+                         (get-condition-property exn 'exn 'arguments) "\n"
+                         (with-output-to-string (lambda () (pp (condition->list exn)))))
+             status: 'bad-request)
+   (handler r)))
 
 ;; append \n at end of server response. makes it terminal friendly
-(define ((trailing-newline handler) r)
-  (alist-update 'body (string-append (alist-ref 'body r) "\n") r))
+(define ((wrap-trailing-newline handler) r)
+  (let ((resp (handler r)))
+    (alist-update 'body (string-append (or (alist-ref 'body resp) "") "\n") resp)))
 
 
 ;; slurp entire request payload into string
@@ -57,12 +54,17 @@
 
 ;; ==================== routes ====================
 
+(define (request-route request)
+  (cons (alist-ref 'method request)
+        ;; remove trailing slashes:
+        ;;   curl localhost:8080  => '(/)
+        ;;   curl localhost:8080/ => '(/ "")
+        (cdr (remove (lambda (x) (equal? x ""))
+                     (uri-path (alist-ref 'uri request))))))
+
 (define-syntax match-route
   (syntax-rules ()
     ((_ request specs ...)
-     (match (cons  (alist-ref 'method request)
-                   ;; remove trailing slashes:
-                   ;;   curl localhost:8080  => '(/)
-                   ;;   curl localhost:8080/ => '(/ "")
-                   (cdr (remove (lambda (x) (equal? x "")) (uri-path (map-ref request 'uri)))))
+     (match (request-route request)
        specs ...))))
+

@@ -3,34 +3,29 @@
 
 A CHICKEN egg for creating HTTP-servers. Inspired by Clojure's ring.
 
+## Dependencies
+
+
+
 # Example
 
 Run `csi -s example.scm` and try it:
 
 ```sh
-curl localhost:8080
-usage: POST some data to /echo
-
-~ $ curl localhost:8080/echo -d "foobar"
-foobar right back atcha
-
-~ $ curl localhost:8080/images
-your toplevel path is images
-
-~ $ curl localhost:8080/ -d "POST to root" -D -
-HTTP/1.1 404 Not Found
-Content-Type: text/html
-Server: Spiffy/5.4 (Running on Chicken 4.9.1)
-Content-Length: 15
-Date: Mon, 13 Apr 2015 13:29:35 GMT
-
-url not found!
+$ curl localhost:8080/
+root
+$ curl localhost:8080/echo
+no matching uri for (GET echo)
+$ curl localhost:8080/echo -d 'hi'
+hi
+$ curl localhost:8080/bad
+no matching uri for (GET bad)
 ```
 
-The example runs nrepl in the background, so you can also do:
+If you edit the example to use nrepl, so you can also do:
 
 ```sh
-echo '(define (app r) (response body: "you have been hacked"))' | nc localhost 8081
+echo '(define (app r) (response body: "you have been hacked"))' | nc localhost 1234
 ```
 
 Which yields:
@@ -46,7 +41,6 @@ behaviour and REST-APIs while it's running.
 
 # TODO
 
-- depend on persistent-hash-map? can we just use alists instead?
 - make a json wrapper to show how easy life can be
 - support better logging
 - unwrap uri-path in request map? 
