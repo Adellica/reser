@@ -25,6 +25,17 @@
     (alist-update 'body (string-append (or (alist-ref 'body resp) "") "\n") resp)))
 
 
+;; access domain-name string, use "*" to give everybody access
+;; ((wrap-cors-headers "*" (lambda _ (response headers: (headers `((abd "klm")))))) '())
+;; ((wrap-cors-headers "*" (lambda _ (response body: "hi"))) '())
+(define ((wrap-cors-headers access handler) r)
+  (let ((response (handler r)))
+    (alist-update 'headers
+                  (alist-update 'Access-Control-Allow-Origin
+                                (list access)
+                                (or (alist-ref 'headers response) '()))
+                  response)))
+
 ;; slurp entire request payload into string
 (define (request-string!)
   ;; TODO: what to do is we have more than 16MB? we can't just ignore it all.
